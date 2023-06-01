@@ -42,7 +42,6 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
     protected $externalDomains = [];
 
     public function __construct(
-        string $name = null,
         NotificationHandler $notificationHandler,
         ExtensionConfiguration $extensionConfiguration
     ) {
@@ -51,7 +50,7 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
         $this->notificationHandler = $notificationHandler;
         $this->extensionConfiguration = $extensionConfiguration;
 
-        parent::__construct($name);
+        parent::__construct();
     }
 
     /**
