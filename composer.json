@@ -37,7 +37,7 @@
 		}
 	},
 	"replace": {
-		"georgringer/redirect_generator": "*",
+		"georgringer/redirect-generator": "*",
 		"typo3-ter/redirect-generator": "self.version"
 	},
 	"extra": {
