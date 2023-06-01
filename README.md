@@ -1,5 +1,7 @@
 # TYPO3 Extension `redirect_generator`
 
+> This is a fork of [redirect_generator from Georg Ringer](https://github.com/georgringer/redirect_generator).
+
 This extensions creates proper redirect entries from a CSV file.
 
 Each target entry will be matched by the routing configuration. If the target is `http://demo.vm/company/contact`, the redirect will be created to the related page id!
@@ -10,14 +12,14 @@ Each target entry will be matched by the routing configuration. If the target is
 
 ### Requirements
 
-* TYPO3 10 / 11
+* TYPO3 10
 * EXT:redirects
 
 ### Setup
 
 Install as any other extension:
 
-* *Composer*: `composer require georgringer/redirect-generator`
+* *Composer*: `composer require mxp/redirect-generator`
 
 ## Configuration
 

@@ -1,5 +1,5 @@
 {
-	"name": "georgringer/redirect-generator",
+	"name": "mxp/redirect-generator",
 	"type": "typo3-cms-extension",
 	"description": "Generate redirect entries from a given set of URLs and export all to CSV",
 	"keywords": [
@@ -10,20 +10,26 @@
 		"export",
 		"csv"
 	],
-	"homepage": "https://ringer.it",
+	"homepage": "https://github.com/mxpgmbh/redirect_generator",
 	"authors": [
 		{
 			"name": "Georg Ringer",
 			"role": "Developer",
 			"homepage": "https://ringer.it"
+		},
+		{
+			"name": "Rolf Kiefhber",
+			"role": "Developer",
+			"homepage": "https://www.mxp.de"
 		}
 	],
 	"license": [
 		"GPL-2.0-or-later"
 	],
 	"require": {
-		"typo3/cms-core": "^10.1 || ^11.5",
-		"typo3/cms-redirects": "^10.1 || ^11.5"
+		"php": "^7.4 || ^8.0",
+		"typo3/cms-core": "^10.4",
+		"typo3/cms-redirects": "^10.4"
 	},
 	"autoload": {
 		"psr-4": {
@@ -31,6 +37,7 @@
 		}
 	},
 	"replace": {
+		"georgringer/redirect_generator": "*",
 		"typo3-ter/redirect-generator": "self.version"
 	},
 	"extra": {
