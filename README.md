@@ -12,7 +12,7 @@ Each target entry will be matched by the routing configuration. If the target is
 
 ### Requirements
 
-* TYPO3 10
+* TYPO3 10 || 11
 * EXT:redirects
 
 ### Setup
