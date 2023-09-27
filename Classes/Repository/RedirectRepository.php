@@ -55,10 +55,14 @@ class RedirectRepository
         if (is_array($existingRow)) {
             if ($target !== $existingRow['target']) {
                 $this->updateExistingRow($existingRow, $target, $configuration, $dryRun);
+                $template = $configuration->getOverwriteExisting()
+                    ? 'Redirect for "%s" exists already with ID %s! Existing target was "%s", new target is now "%s".'
+                    : 'Redirect for "%s" exists already with ID %s! Existing target is "%s", new target would be "%s".'
+                    ;
 
                 throw new ConflictingDuplicateException(
                     \sprintf(
-                        'Redirect for "%s" exists already with ID %s! Existing target is "%s", new target would be "%s".',
+                        $template,
                         $url,
                         $existingRow['uid'],
                         $existingRow['target'],
