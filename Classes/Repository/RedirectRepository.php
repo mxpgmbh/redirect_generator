@@ -54,6 +54,8 @@ class RedirectRepository
         $existingRow = $this->getRedirect($url);
         if (is_array($existingRow)) {
             if ($target !== $existingRow['target']) {
+                $this->updateExistingRow($existingRow, $target, $configuration, $dryRun);
+
                 throw new ConflictingDuplicateException(
                     \sprintf(
                         'Redirect for "%s" exists already with ID %s! Existing target is "%s", new target would be "%s".',
@@ -116,5 +118,36 @@ class RedirectRepository
     {
         return GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable(self::TABLE);
+    }
+
+    protected function updateExistingRow(
+        array $existingRow,
+        string $target,
+        Configuration $configuration,
+        bool $dryRun
+    ): void {
+        if ($dryRun) {
+            return;
+        }
+
+        $connection = $this->getConnection();
+
+        $data = [
+            'updatedon' => $this->getExecTime(),
+            'keep_query_parameters' => $configuration->getKeepQueryParameters() ? 1 : 0,
+            'is_regexp' => $configuration->getRegexp() ? 1 : 0,
+            'force_https' => $configuration->getForceHttps() ? 1 : 0,
+            'target_statuscode' => $configuration->getTargetStatusCode(),
+            'disable_hitcount' => $configuration->getDisableHitCount() ? 1 : 0,
+            'respect_query_parameters' => $configuration->getRespectQueryParameters() ? 1 : 0,
+            'target' => $target,
+        ];
+
+        $connection->update(self::TABLE, $data, ['uid' => $existingRow['uid']]);
+    }
+
+    protected function getExecTime(): string
+    {
+        return $GLOBALS['EXEC_TIME'];
     }
 }
