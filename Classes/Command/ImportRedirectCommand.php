@@ -41,6 +41,8 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
     /** @var array */
     protected $externalDomains = [];
 
+    protected bool $overwriteExisting = false;
+
     public function __construct(
         NotificationHandler $notificationHandler,
         ExtensionConfiguration $extensionConfiguration
@@ -75,6 +77,12 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 null,
                 InputOption::VALUE_NONE,
                 'Delete the import file after import'
+            )->addOption(
+                'overwrite-existing',
+                null,
+                InputOption::VALUE_NONE,
+                'Overwrite existing source URLs with the given target. Does not'
+                    . ' alter notification level (warning / info) of duplicates'
             )
             ->setHelp('Import a CSV file as redirects');
     }
@@ -92,6 +100,10 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
 
         $filePath = $input->getArgument('file');
         $dryRun = ($input->hasOption('dry-run') && $input->getOption('dry-run') != false);
+        $this->overwriteExisting = (
+            $input->hasOption('overwrite-existing')
+            && $input->getOption('overwrite-existing') != false
+        );
         if ($input->hasOption('external-domains')) {
             $this->setExternalDomains((string)$input->getOption('external-domains'));
         }
@@ -202,6 +214,7 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 }
 
                 $configuration = $this->getConfigurationFromItem($item);
+                $configuration->setOverwriteExisting($this->overwriteExisting);
                 if ($item['external'] ?? '' === '1' || $this->isExternalDomain($item['target'] ?? '')) {
                     $targetUrl = $item['target'];
                 } else {

@@ -37,6 +37,12 @@ class AddRedirectCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Define the status code, can be 301,302,303 or 307',
                 307
+            )->addOption(
+                'overwrite-existing',
+                null,
+                InputOption::VALUE_NONE,
+                'Overwrite existing source URL with the given target. Does not'
+                    . ' alter notification level (warning / info) of duplicate'
             )
             ->setHelp('Add a single redirect from the given source url to the target url. Target URL must be a valid page!');
     }
@@ -96,6 +102,10 @@ class AddRedirectCommand extends Command
     {
         $configuration = new Configuration();
 
+        $configuration->setOverwriteExisting(
+            $input->hasOption('overwrite-existing')
+            && $input->getOption('overwrite-existing') != false
+        );
 
         if ($input->hasOption('status-code') && !$configuration->statusCodeIsAllowed((int)$input->getOption('status-code'))) {
             throw new \RuntimeException('Status code wrong');
