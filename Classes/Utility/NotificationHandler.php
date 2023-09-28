@@ -16,6 +16,7 @@ class NotificationHandler
     public const IMPORT_SKIPPED_MESSAGE = '%s redirects skipped because source is same as target!';
     public const IMPORT_DUPLICATES_CONFLICTING_MESSAGE = '%s redirects skipped because of conflicting duplicates!';
     public const IMPORT_DUPLICATES_NON_CONFLICTING_MESSAGE = '%s redirects skipped because of non conflicting duplicates.';
+    public const IMPORT_DUPLICATES_OVERWRITTEN_MESSAGE = '%s redirects overwritten because of duplicates.';
 
     /** @var ExtensionConfiguration|null */
     protected $extensionConfiguration = null;
@@ -100,6 +101,12 @@ class NotificationHandler
             $lines[] = \sprintf(
                 '[Info] ' . self::IMPORT_DUPLICATES_NON_CONFLICTING_MESSAGE,
                 \count($data['duplicates']['non_conflicting'])
+            );
+        }
+        if (!empty($data['duplicates']['overwritten']) && $level >= 2) {
+            $lines[] = \sprintf(
+                '[Info] ' . self::IMPORT_DUPLICATES_OVERWRITTEN_MESSAGE,
+                \count($data['duplicates']['overwritten'])
             );
         }
 

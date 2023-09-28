@@ -47,7 +47,7 @@ The following options are available:
 * `--status-code`: Define the status code, allowed are *301*,*302*, *303* and *307*.
 * `--dry-run`: If set, the redirect won't be added
 * `--overwrite existing`: Overwrite existing source URLs with the given target.
-  Does not alter notification level (warning / info) of duplicates
+  Uses notification level 2 (info) when actually overwriting something
 
 ### Import CSV
 
@@ -74,7 +74,7 @@ The following options are available:
 * `--external-domains`: Provide a comma separated list of domains which are external
 * `--delete-file`: If set the CSV file is deleted after (a successful or unsuccessful) import
 * `--overwrite existing`: Overwrite existing source URLs with the given target.
-  Does not alter notification level (warning / info) of duplicates
+  Uses notification level 2 (info) when actually overwriting something
 
 > This command can be run in the scheduler (select *Execute console commands* as class)
 

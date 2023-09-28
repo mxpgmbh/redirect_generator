@@ -6,6 +6,7 @@ namespace GeorgRinger\RedirectGenerator\Command;
 use GeorgRinger\RedirectGenerator\Domain\Model\Dto\Configuration;
 use GeorgRinger\RedirectGenerator\Exception\ConflictingDuplicateException;
 use GeorgRinger\RedirectGenerator\Exception\NonConflictingDuplicateException;
+use GeorgRinger\RedirectGenerator\Exception\OverwrittenDuplicateException;
 use GeorgRinger\RedirectGenerator\Repository\RedirectRepository;
 use GeorgRinger\RedirectGenerator\Service\CsvReader;
 use GeorgRinger\RedirectGenerator\Service\UrlMatcher;
@@ -81,8 +82,9 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 'overwrite-existing',
                 null,
                 InputOption::VALUE_NONE,
-                'Overwrite existing source URLs with the given target. Does not'
-                    . ' alter notification level (warning / info) of duplicates'
+                'Overwrite existing source URLs with the given target.'
+                . ' Uses notification level 2 (info) when actually overwriting'
+                . ' something'
             )
             ->setHelp('Import a CSV file as redirects');
     }
@@ -170,6 +172,14 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 $io->info($msg);
                 $this->logger->info($msg . PHP_EOL . \implode(PHP_EOL, $response['duplicates']['non_conflicting']));
             }
+            if (!empty($response['duplicates']['overwritten'])) {
+                $msg = \sprintf(
+                    NotificationHandler::IMPORT_DUPLICATES_OVERWRITTEN_MESSAGE,
+                    \count($response['duplicates']['overwritten'])
+                );
+                $io->info($msg);
+                $this->logger->info($msg . PHP_EOL . \implode(PHP_EOL, $response['duplicates']['overwritten']));
+            }
 
             $this->notificationHandler->sendImportResultAsEmail($response);
         } catch (\UnexpectedValueException $exception) {
@@ -229,6 +239,8 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 $this->redirectRepository->addRedirect($item['source'], $targetUrl, $configuration, $dryRun);
 
                 $response['ok'][] = 'Redirect added: ' . $item['source'] . ' => ' . $item['target'];
+            } catch (OverwrittenDuplicateException $exception) {
+                $response['duplicates']['overwritten'][] = $exception->getMessage();
             } catch (NonConflictingDuplicateException $e) {
                 $response['duplicates']['non_conflicting'][] = $e->getMessage();
             } catch (ConflictingDuplicateException $e) {
