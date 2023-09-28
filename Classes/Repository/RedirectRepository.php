@@ -150,7 +150,7 @@ class RedirectRepository
         $connection->update(self::TABLE, $data, ['uid' => $existingRow['uid']]);
     }
 
-    protected function getExecTime(): string
+    protected function getExecTime(): int
     {
         return $GLOBALS['EXEC_TIME'];
     }
