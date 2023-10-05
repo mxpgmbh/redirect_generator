@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace GeorgRinger\RedirectGenerator\Command;
 
 use GeorgRinger\RedirectGenerator\Domain\Model\Dto\Configuration;
+use GeorgRinger\RedirectGenerator\Exception\OverwrittenDuplicateException;
 use GeorgRinger\RedirectGenerator\Repository\RedirectRepository;
 use GeorgRinger\RedirectGenerator\Service\UrlMatcher;
 use Symfony\Component\Console\Command\Command;
@@ -37,7 +38,14 @@ class AddRedirectCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Define the status code, can be 301,302,303 or 307',
                 307
-            )
+            )->addOption(
+                'overwrite-existing',
+                null,
+                InputOption::VALUE_NONE,
+                'Overwrite existing source URL with the given target.'
+                . ' Uses notification level 2 (info) when actually overwriting'
+                . ' something'
+                )
             ->setHelp('Add a single redirect from the given source url to the target url. Target URL must be a valid page!');
     }
 
@@ -71,8 +79,13 @@ class AddRedirectCommand extends Command
                 $io->success('The following redirect would have been added:');
             } else {
                 $redirectRepository = GeneralUtility::makeInstance(RedirectRepository::class);
-                $redirectRepository->addRedirect($source, $result->getLinkString(), $configuration, $dryRun);
-                $io->success('Redirect has been added!');
+                $message = 'Redirect has been added!';
+                try {
+                    $redirectRepository->addRedirect($source, $result->getLinkString(), $configuration, $dryRun);
+                } catch (OverwrittenDuplicateException $exception) {
+                    $message = 'Redirect has been overwritten!';
+                }
+                $io->success($message);
             }
 
             $language = $result->getSiteRouteResult()->getLanguage();
@@ -96,6 +109,10 @@ class AddRedirectCommand extends Command
     {
         $configuration = new Configuration();
 
+        $configuration->setOverwriteExisting(
+            $input->hasOption('overwrite-existing')
+            && $input->getOption('overwrite-existing') != false
+        );
 
         if ($input->hasOption('status-code') && !$configuration->statusCodeIsAllowed((int)$input->getOption('status-code'))) {
             throw new \RuntimeException('Status code wrong');

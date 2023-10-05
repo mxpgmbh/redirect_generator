@@ -27,6 +27,8 @@ class Configuration
 
     private const ALLOWED_STATUS_CODES = [301, 302, 303, 307];
 
+    protected bool $overwriteExisting = false;
+
     /**
      * @return bool
      */
@@ -140,4 +142,14 @@ class Configuration
         return in_array($statusCode, self::ALLOWED_STATUS_CODES, true);
     }
 
+    public function getOverwriteExisting(): bool
+    {
+        return $this->overwriteExisting;
+    }
+
+    public function setOverwriteExisting(bool $overwriteExisting): self
+    {
+        $this->overwriteExisting = $overwriteExisting;
+        return $this;
+    }
 }

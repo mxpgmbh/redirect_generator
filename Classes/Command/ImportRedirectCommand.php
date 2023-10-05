@@ -6,6 +6,7 @@ namespace GeorgRinger\RedirectGenerator\Command;
 use GeorgRinger\RedirectGenerator\Domain\Model\Dto\Configuration;
 use GeorgRinger\RedirectGenerator\Exception\ConflictingDuplicateException;
 use GeorgRinger\RedirectGenerator\Exception\NonConflictingDuplicateException;
+use GeorgRinger\RedirectGenerator\Exception\OverwrittenDuplicateException;
 use GeorgRinger\RedirectGenerator\Repository\RedirectRepository;
 use GeorgRinger\RedirectGenerator\Service\CsvReader;
 use GeorgRinger\RedirectGenerator\Service\UrlMatcher;
@@ -41,6 +42,8 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
     /** @var array */
     protected $externalDomains = [];
 
+    protected bool $overwriteExisting = false;
+
     public function __construct(
         NotificationHandler $notificationHandler,
         ExtensionConfiguration $extensionConfiguration
@@ -75,6 +78,13 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 null,
                 InputOption::VALUE_NONE,
                 'Delete the import file after import'
+            )->addOption(
+                'overwrite-existing',
+                null,
+                InputOption::VALUE_NONE,
+                'Overwrite existing source URLs with the given target.'
+                . ' Uses notification level 2 (info) when actually overwriting'
+                . ' something'
             )
             ->setHelp('Import a CSV file as redirects');
     }
@@ -92,6 +102,10 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
 
         $filePath = $input->getArgument('file');
         $dryRun = ($input->hasOption('dry-run') && $input->getOption('dry-run') != false);
+        $this->overwriteExisting = (
+            $input->hasOption('overwrite-existing')
+            && $input->getOption('overwrite-existing') != false
+        );
         if ($input->hasOption('external-domains')) {
             $this->setExternalDomains((string)$input->getOption('external-domains'));
         }
@@ -158,6 +172,14 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 $io->info($msg);
                 $this->logger->info($msg . PHP_EOL . \implode(PHP_EOL, $response['duplicates']['non_conflicting']));
             }
+            if (!empty($response['duplicates']['overwritten'])) {
+                $msg = \sprintf(
+                    NotificationHandler::IMPORT_DUPLICATES_OVERWRITTEN_MESSAGE,
+                    \count($response['duplicates']['overwritten'])
+                );
+                $io->info($msg);
+                $this->logger->info($msg . PHP_EOL . \implode(PHP_EOL, $response['duplicates']['overwritten']));
+            }
 
             $this->notificationHandler->sendImportResultAsEmail($response);
         } catch (\UnexpectedValueException $exception) {
@@ -202,6 +224,7 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 }
 
                 $configuration = $this->getConfigurationFromItem($item);
+                $configuration->setOverwriteExisting($this->overwriteExisting);
                 if ($item['external'] ?? '' === '1' || $this->isExternalDomain($item['target'] ?? '')) {
                     $targetUrl = $item['target'];
                 } else {
@@ -216,6 +239,8 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
                 $this->redirectRepository->addRedirect($item['source'], $targetUrl, $configuration, $dryRun);
 
                 $response['ok'][] = 'Redirect added: ' . $item['source'] . ' => ' . $item['target'];
+            } catch (OverwrittenDuplicateException $exception) {
+                $response['duplicates']['overwritten'][] = $exception->getMessage();
             } catch (NonConflictingDuplicateException $e) {
                 $response['duplicates']['non_conflicting'][] = $e->getMessage();
             } catch (ConflictingDuplicateException $e) {

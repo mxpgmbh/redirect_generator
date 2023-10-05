@@ -7,6 +7,7 @@ use GeorgRinger\RedirectGenerator\Domain\Model\Dto\Configuration;
 use GeorgRinger\RedirectGenerator\Domain\Model\Dto\UrlInfo;
 use GeorgRinger\RedirectGenerator\Exception\ConflictingDuplicateException;
 use GeorgRinger\RedirectGenerator\Exception\NonConflictingDuplicateException;
+use GeorgRinger\RedirectGenerator\Exception\OverwrittenDuplicateException;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -47,16 +48,37 @@ class RedirectRepository
      * @param string $target
      * @param Configuration $configuration
      * @param bool $dryRun
-     * @throws ConflictingDuplicateException,NonConflictingDuplicateException
+     * @throws ConflictingDuplicateException,NonConflictingDuplicateException,OverwrittenDuplicateException
      */
     public function addRedirect(string $url, string $target, Configuration $configuration, bool $dryRun = false): void
     {
         $existingRow = $this->getRedirect($url);
         if (is_array($existingRow)) {
+            if ($configuration->getOverwriteExisting()) {
+                $this->updateExistingRow($existingRow, $target, $configuration, $dryRun);
+
+                // This should be a return value, as this is normal control flow
+                // and nothing exceptional.
+                throw new OverwrittenDuplicateException(
+                    \sprintf(
+                        'Redirect for "%s" overwrites ID %s! Existing'
+                            . ' target was "%s", new target is now "%s".'
+                            ,
+                        $url,
+                        $existingRow['uid'],
+                        $existingRow['target'],
+                        $target
+                    ),
+                    1695904053
+                );
+            }
+
             if ($target !== $existingRow['target']) {
                 throw new ConflictingDuplicateException(
                     \sprintf(
-                        'Redirect for "%s" exists already with ID %s! Existing target is "%s", new target would be "%s".',
+                        'Redirect for "%s" exists already with ID %s! Existing'
+                            . ' target is "%s", new target would be "%s".'
+                            ,
                         $url,
                         $existingRow['uid'],
                         $existingRow['target'],
@@ -116,5 +138,36 @@ class RedirectRepository
     {
         return GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable(self::TABLE);
+    }
+
+    protected function updateExistingRow(
+        array $existingRow,
+        string $target,
+        Configuration $configuration,
+        bool $dryRun
+    ): void {
+        if ($dryRun) {
+            return;
+        }
+
+        $connection = $this->getConnection();
+
+        $data = [
+            'updatedon' => $this->getExecTime(),
+            'keep_query_parameters' => $configuration->getKeepQueryParameters() ? 1 : 0,
+            'is_regexp' => $configuration->getRegexp() ? 1 : 0,
+            'force_https' => $configuration->getForceHttps() ? 1 : 0,
+            'target_statuscode' => $configuration->getTargetStatusCode(),
+            'disable_hitcount' => $configuration->getDisableHitCount() ? 1 : 0,
+            'respect_query_parameters' => $configuration->getRespectQueryParameters() ? 1 : 0,
+            'target' => $target,
+        ];
+
+        $connection->update(self::TABLE, $data, ['uid' => $existingRow['uid']]);
+    }
+
+    protected function getExecTime(): int
+    {
+        return $GLOBALS['EXEC_TIME'];
     }
 }

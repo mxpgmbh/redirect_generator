@@ -46,6 +46,8 @@ The following options are available:
 
 * `--status-code`: Define the status code, allowed are *301*,*302*, *303* and *307*.
 * `--dry-run`: If set, the redirect won't be added
+* `--overwrite existing`: Overwrite existing source URLs with the given target.
+  Uses notification level 2 (info) when actually overwriting something
 
 ### Import CSV
 
@@ -55,12 +57,12 @@ Use the following CLI command:
 ./bin/typo3 redirect:import <path-to-file.csv>
 ```
 
-````csv
+```csv
 source;target;status_code
 /fo/bar;http://t3-master.vm/examples/extensions/news;301
 /fo/bar2;http://t3-master.vm/examples/extensions/news;307
 /fo/bar3;http://t3-master.vm/exakqwkqkwmples/extensions/news;301
-````
+```
 
 A sample CSV file can be found at `EXT:redirect_generator/Resources/Private/Examples/ImportBasic.csv`
 
@@ -71,6 +73,8 @@ The following options are available:
 * `--dry-run`: If set, the redirect won't be added
 * `--external-domains`: Provide a comma separated list of domains which are external
 * `--delete-file`: If set the CSV file is deleted after (a successful or unsuccessful) import
+* `--overwrite existing`: Overwrite existing source URLs with the given target.
+  Uses notification level 2 (info) when actually overwriting something
 
 > This command can be run in the scheduler (select *Execute console commands* as class)
 
