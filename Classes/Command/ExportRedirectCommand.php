@@ -21,11 +21,13 @@ class ExportRedirectCommand extends Command
     protected $notificationHandler;
 
     public function __construct(
-        NotificationHandler $notificationHandler
-    ) {
+        string $name = '',
+        NotificationHandler $notificationHandler = null
+    )
+    {
         $this->notificationHandler = $notificationHandler;
 
-        parent::__construct();
+        parent::__construct('redirect:export');
     }
 
     /**

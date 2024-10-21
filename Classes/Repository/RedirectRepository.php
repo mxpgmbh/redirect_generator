@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class RedirectRepository
 {
-    private const CUSTOM_USER_ID = 19191918;
+    public const CUSTOM_CREATION_TYPE = 6332;
 
     private const TABLE = 'sys_redirect';
 
@@ -33,7 +33,7 @@ class RedirectRepository
                 ),
                 $queryBuilder->expr()->eq('source_path', $queryBuilder->createNamedParameter($urlInfo->getPathWithQuery(), \PDO::PARAM_STR))
             )
-            ->execute()
+            ->executeQuery()
             ->fetchAssociative();
 
         if ($row === false) {
@@ -107,7 +107,7 @@ class RedirectRepository
         $connection = $this->getConnection();
 
         $data = [
-            'createdby' => self::CUSTOM_USER_ID,
+            'creation_type' => self::CUSTOM_CREATION_TYPE,
             'createdon' => $GLOBALS['EXEC_TIME'],
             'updatedon' => $GLOBALS['EXEC_TIME'],
             'keep_query_parameters' => $configuration->getKeepQueryParameters() ? 1 : 0,
@@ -130,7 +130,7 @@ class RedirectRepository
         return $queryBuilder
             ->select('*')
             ->from(self::TABLE)
-            ->execute()
+            ->executeQuery()
             ->fetchAllAssociative();
     }
 
