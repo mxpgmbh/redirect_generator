@@ -21,11 +21,13 @@ class ExportRedirectCommand extends Command
     protected $notificationHandler;
 
     public function __construct(
-        NotificationHandler $notificationHandler
-    ) {
+        string $name = '',
+        NotificationHandler $notificationHandler = null
+    )
+    {
         $this->notificationHandler = $notificationHandler;
 
-        parent::__construct();
+        parent::__construct('redirect:export');
     }
 
     /**
@@ -50,7 +52,7 @@ class ExportRedirectCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $io->title($this->getDescription());

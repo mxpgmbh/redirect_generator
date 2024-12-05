@@ -45,15 +45,16 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
     protected bool $overwriteExisting = false;
 
     public function __construct(
-        NotificationHandler $notificationHandler,
-        ExtensionConfiguration $extensionConfiguration
+        string $name = '',
+        NotificationHandler $notificationHandler = null,
+        ExtensionConfiguration $extensionConfiguration = null
     ) {
         $this->redirectRepository = GeneralUtility::makeInstance(RedirectRepository::class);
         $this->urlMatcher = GeneralUtility::makeInstance(UrlMatcher::class);
         $this->notificationHandler = $notificationHandler;
         $this->extensionConfiguration = $extensionConfiguration;
 
-        parent::__construct();
+        parent::__construct('redirect:import');
     }
 
     /**
@@ -95,7 +96,7 @@ class ImportRedirectCommand extends Command implements LoggerAwareInterface
      * @param InputInterface $input
      * @param OutputInterface $output
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $io->title($this->getDescription());
