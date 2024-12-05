@@ -8,7 +8,7 @@ $EM_CONF[$_EXTKEY] = [
     'author_email' => 'r.kiefhaber@mxp.de',
     'state' => 'beta',
     'clearCacheOnLoad' => true,
-    'version' => '2.0.0',
+    'version' => '3.0.0',
     'constraints' =>
         [
             'depends' => [
